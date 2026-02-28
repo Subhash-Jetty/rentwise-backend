@@ -29,6 +29,10 @@ def create_property():
     try:
         city = request.form.get("city")
         locality = request.form.get("locality")
+
+        # Normalize input
+        city = city.strip().title()
+        locality = locality.strip().title()
         bedrooms = int(request.form.get("bedrooms"))
         area_sqft = float(request.form.get("area_sqft"))
         rent = round(float(request.form.get("rent")))
@@ -224,8 +228,10 @@ def update_property(property_id):
     data = request.get_json()
 
     try:
-        property_obj.city = data.get("city", property_obj.city)
-        property_obj.locality = data.get("locality", property_obj.locality)
+        if data.get("city"):
+            property_obj.city = data.get("city").strip().title()
+        if data.get("locality"):
+            property_obj.locality = data.get("locality").strip().title()
         property_obj.bedrooms = int(data.get("bedrooms", property_obj.bedrooms))
         property_obj.area_sqft = float(data.get("area_sqft", property_obj.area_sqft))
         property_obj.rent = round(float(data.get("rent", property_obj.rent)))
