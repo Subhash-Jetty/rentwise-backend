@@ -14,8 +14,18 @@ def create_app():
     app.config.from_object(Config)
 
     db.init_app(app)
+    with app.app_context():
+      db.create_all()
     jwt.init_app(app)
-    CORS(app)
+    from flask_cors import CORS
+
+CORS(
+    app,
+    resources={r"/*": {"origins": "https://rentwise-frontend-two.vercel.app"}},
+    supports_credentials=True,
+    methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allow_headers=["Content-Type", "Authorization"]
+)
 
     # -----------------------------
     # Upload Folder Setup
@@ -40,7 +50,7 @@ def create_app():
     from app.routes.analysis_routes import analysis_bp
 
     app.register_blueprint(auth_bp, url_prefix="/auth")
-    app.register_blueprint(property_bp, url_prefix="/properties")
+    app.register_blueprint(property_bp)
     app.register_blueprint(analysis_bp, url_prefix="/analysis")
 
     # -----------------------------
