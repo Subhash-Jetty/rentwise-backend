@@ -10,9 +10,7 @@ from app.models.property import Property
 # --------------------------------------------------
 # MODEL PATH
 # --------------------------------------------------
-BASE_DIR = os.path.abspath(
-    os.path.join(os.path.dirname(__file__), "../../")
-)
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MODEL_PATH = os.path.join(BASE_DIR, "ml", "rent_model.pkl")
 
 
@@ -25,12 +23,12 @@ class RentEngine:
     # --------------------------------------------------
     @classmethod
     def load_model(cls):
-        if cls.model is None:
-            if os.path.exists(MODEL_PATH):
-                cls.model = joblib.load(MODEL_PATH)
-                print("ML model loaded successfully.")
-            else:
-                print("Model file NOT found:", MODEL_PATH)
+       if cls.model is None:
+          if os.path.exists(MODEL_PATH):
+            cls.model = joblib.load(MODEL_PATH)
+            print("ML Model Loaded")
+          else:
+             print("ML model not found at:", MODEL_PATH)
 
     # --------------------------------------------------
     # BENCHMARK CALCULATION
