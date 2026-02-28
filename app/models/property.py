@@ -1,5 +1,6 @@
 from datetime import datetime
 from app import db
+from flask import current_app
 from app.models.property_image import PropertyImage
 
 class Property(db.Model):
@@ -12,7 +13,7 @@ class Property(db.Model):
     bedrooms = db.Column(db.Integer, nullable=False)
     area_sqft = db.Column(db.Float, nullable=False)
 
-    # ✅ FIXED — use Integer for money
+    
     rent = db.Column(db.Integer, nullable=False)
 
     description = db.Column(db.Text)
@@ -56,19 +57,26 @@ class Property(db.Model):
     # -----------------------
     # Serialize
     # -----------------------
+        # -----------------------
+    # Serialize
+    # -----------------------
     def to_dict(self):
+        from flask import request
+
+        base_url = request.host_url.rstrip("/")
+
         return {
             "id": self.id,
             "city": self.city,
             "locality": self.locality,
             "bedrooms": self.bedrooms,
             "area_sqft": self.area_sqft,
-            "rent": self.rent,  # No rounding needed anymore
+            "rent": self.rent,
             "description": self.description,
             "average_rating": self.average_rating(),
             "owner_email": self.owner.email if self.owner else None,
             "images": [
-                f"http://127.0.0.1:5000/uploads/{img.image_filename}"
+                f"{base_url}/uploads/{img.image_filename}"
                 for img in self.images
             ],
             "reviews": [

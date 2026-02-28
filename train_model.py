@@ -72,10 +72,13 @@ preprocessor = ColumnTransformer([
 pipeline = Pipeline([
     ("preprocessor", preprocessor),
     ("regressor", RandomForestRegressor(
-        n_estimators=150,
-        max_depth=15,
-        random_state=42
-    ))
+    n_estimators=90,        
+    max_depth=12,           
+    min_samples_split=5,
+    min_samples_leaf=2,
+    random_state=42,
+    n_jobs=-1
+))
 ])
 
 pipeline.fit(X_train, y_train)
@@ -89,7 +92,7 @@ metrics = {
     "dataset_size": len(df)
 }
 
-joblib.dump(pipeline, "rent_model.pkl")
+joblib.dump(pipeline, "rent_model.pkl", compress=3)
 
 with open("model_metrics.json", "w") as f:
     json.dump(metrics, f)
