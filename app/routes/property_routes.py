@@ -98,7 +98,9 @@ def get_all_properties():
     except:
         current_user_id = None
 
-    city = request.args.get("city")
+    city = request.form.get("city")
+    if city:
+      city = city.strip().lower().capitalize()
     locality = request.args.get("locality")
     bedrooms = request.args.get("bedrooms")
     min_price = request.args.get("min_price")
