@@ -13,19 +13,17 @@ def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
 
-    db.init_app(app)
-    with app.app_context():
-      db.create_all()
-    jwt.init_app(app)
-    from flask_cors import CORS
+    # ✅ CORS MUST be inside create_app
+    CORS(
+        app,
+        resources={r"/*": {"origins": "https://rentwise-frontend-two.vercel.app"}},
+        supports_credentials=True,
+        methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+        allow_headers=["Content-Type", "Authorization"]
+    )
 
-CORS(
-    app,
-    resources={r"/*": {"origins": "https://rentwise-frontend-two.vercel.app"}},
-    supports_credentials=True,
-    methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allow_headers=["Content-Type", "Authorization"]
-)
+    db.init_app(app)
+    jwt.init_app(app)
 
     # -----------------------------
     # Upload Folder Setup
