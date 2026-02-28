@@ -1,0 +1,22 @@
+# Python
+venv/
+__pycache__/
+*.pyc
+
+# Environment
+.env
+
+# Uploads
+uploads/
+
+# ML models
+*.pkl
+
+# Instance folder
+instance/
+
+# VSCode
+.vscode/
+
+# OS
+.DS_Store
