@@ -19,17 +19,15 @@ def upload_to_r2(file):
     r2 = get_r2_client()
 
     filename = f"{uuid.uuid4()}-{file.filename}"
-    object_key = f"rentwise-images/{filename}"   
 
     r2.upload_fileobj(
         file,
         os.environ.get("R2_BUCKET_NAME"),
-        object_key,   
+        filename,   # ← NO folder prefix
         ExtraArgs={"ContentType": file.content_type}
     )
 
-    return f"{os.environ.get('R2_PUBLIC_URL')}/{object_key}"  
-
+    return f"{os.environ.get('R2_PUBLIC_URL')}/{filename}"
 
 # =========================================================
 # CREATE PROPERTY (MULTIPLE IMAGES)
