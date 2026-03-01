@@ -24,17 +24,6 @@ def create_app():
     db.init_app(app)
     jwt.init_app(app)
 
-    # Upload folder setup
-    BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    UPLOAD_FOLDER = os.path.join(BASE_DIR, "uploads")
-    os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-    app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
-
-    # Serve uploaded images
-    @app.route("/uploads/<filename>")
-    def uploaded_file(filename):
-        return send_from_directory(app.config["UPLOAD_FOLDER"], filename)
-
     # Register blueprints
     from app.routes.auth_routes import auth_bp
     from app.routes.property_routes import property_bp

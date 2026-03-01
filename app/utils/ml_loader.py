@@ -2,14 +2,16 @@ import os
 import joblib
 import pandas as pd
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-MODEL_PATH = os.path.join(BASE_DIR, "..", "ml", "rent_model.pkl")
+# Get absolute path to model file
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+MODEL_PATH = os.path.join(BASE_DIR, "ml", "rent_model.pkl")
 
+# Load model once when app starts
 try:
     model = joblib.load(MODEL_PATH)
-    print("MODEL LOADED FROM:", MODEL_PATH)
+    print(f"MODEL LOADED FROM: {MODEL_PATH}")
 except Exception as e:
-    print("MODEL LOAD ERROR:", e)
+    print("Error loading model:", e)
     model = None
 
 
