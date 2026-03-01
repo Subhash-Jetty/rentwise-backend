@@ -3,7 +3,11 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 from werkzeug.utils import secure_filename
 from sqlalchemy import desc, asc
 import os
-
+from app.utils.r2_client import get_r2_client
+import uuid
+from app.extensions import db
+import os
+from app.utils.r2_upload import upload_to_r2
 from app import db
 from app.models.property import Property
 from app.models.user import User
@@ -11,6 +15,18 @@ from app.models.review import Review
 from app.models.wishlist import Wishlist
 
 property_bp = Blueprint("properties", __name__, url_prefix="/properties")
+def upload_to_r2(file):
+    r2 = get_r2_client()
+    filename = f"{uuid.uuid4()}-{file.filename}"
+
+    r2.upload_fileobj(
+        file,
+        os.environ.get("R2_BUCKET_NAME"),
+        filename,
+        ExtraArgs={"ContentType": file.content_type}
+    )
+
+    return f"{os.environ.get('R2_PUBLIC_URL')}/{filename}"
 
 
 # =========================================================
@@ -19,6 +35,8 @@ property_bp = Blueprint("properties", __name__, url_prefix="/properties")
 @property_bp.route("/", methods=["POST"])
 @jwt_required()
 def create_property():
+    from flask_jwt_extended import get_jwt_identity
+    from app.models.user import User
 
     user_id = int(get_jwt_identity())
     user = db.session.get(User, user_id)
@@ -30,9 +48,9 @@ def create_property():
         city = request.form.get("city")
         locality = request.form.get("locality")
 
-        # Normalize input
         city = city.strip().title()
         locality = locality.strip().title()
+
         bedrooms = int(request.form.get("bedrooms"))
         area_sqft = float(request.form.get("area_sqft"))
         rent = round(float(request.form.get("rent")))
@@ -52,32 +70,23 @@ def create_property():
         )
 
         db.session.add(new_property)
-        db.session.flush()  # Important to get property ID
+        db.session.flush()
 
-        # -------- MULTIPLE IMAGES --------
         images = request.files.getlist("images")
+        from app.models.property_image import PropertyImage
 
         for image in images:
             if image and image.filename != "":
-                filename = secure_filename(image.filename)
-
-                upload_path = os.path.join(
-                    current_app.config["UPLOAD_FOLDER"],
-                    filename
-                )
-                image.save(upload_path)
-
-                from app.models.property_image import PropertyImage
+                image_url = upload_to_r2(image)
 
                 property_image = PropertyImage(
-                    image_filename=filename,
+                    image_filename=image_url,
                     property_id=new_property.id
                 )
 
                 db.session.add(property_image)
 
         db.session.commit()
-
         return jsonify({"message": "Property created"}), 201
 
     except Exception as e:
