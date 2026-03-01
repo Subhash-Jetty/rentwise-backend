@@ -1,19 +1,19 @@
-import os
 import uuid
+from werkzeug.utils import secure_filename
+import os
 from app.utils.r2_client import get_r2_client
 
 def upload_to_r2(file):
     r2 = get_r2_client()
 
-    bucket_name = os.environ.get("R2_BUCKET_NAME")
-
-    unique_filename = f"{uuid.uuid4()}_{file.filename}"
+    filename = f"{uuid.uuid4()}-{secure_filename(file.filename)}"
+    object_key = f"rentwise-images/{filename}"   # KEEP THIS
 
     r2.upload_fileobj(
         file,
-        bucket_name,
-        unique_filename,
+        os.environ.get("R2_BUCKET_NAME"),
+        object_key,
         ExtraArgs={"ContentType": file.content_type}
     )
 
-    return f"{os.environ.get('R2_ENDPOINT_URL')}/{bucket_name}/{unique_filename}"
+    return f"{os.environ.get('R2_PUBLIC_URL')}/{object_key}"
