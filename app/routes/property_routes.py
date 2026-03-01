@@ -15,19 +15,7 @@ from app.models.review import Review
 from app.models.wishlist import Wishlist
 
 property_bp = Blueprint("properties", __name__, url_prefix="/properties")
-def upload_to_r2(file):
-    r2 = get_r2_client()
 
-    filename = f"{uuid.uuid4()}-{file.filename}"
-
-    r2.upload_fileobj(
-        file,
-        os.environ.get("R2_BUCKET_NAME"),
-        filename,   # ← NO folder prefix
-        ExtraArgs={"ContentType": file.content_type}
-    )
-
-    return f"{os.environ.get('R2_PUBLIC_URL')}/{filename}"
 
 # =========================================================
 # CREATE PROPERTY (MULTIPLE IMAGES)
