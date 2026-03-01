@@ -61,9 +61,7 @@ class Property(db.Model):
     # Serialize
     # -----------------------
     def to_dict(self):
-        from flask import request
 
-        base_url = request.host_url.rstrip("/")
 
         return {
             "id": self.id,
@@ -76,9 +74,9 @@ class Property(db.Model):
             "average_rating": self.average_rating(),
             "owner_email": self.owner.email if self.owner else None,
             "images": [
-                f"{base_url}/uploads/{img.image_filename}"
-                for img in self.images
-            ],
+    img.image_filename
+    for img in self.images
+],
             "reviews": [
                 {
                     "rating": r.rating,
