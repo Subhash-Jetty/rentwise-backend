@@ -73,10 +73,10 @@ class Property(db.Model):
             "description": self.description,
             "average_rating": self.average_rating(),
             "owner_email": self.owner.email if self.owner else None,
-            "images": [
-    img.image_filename
-    for img in self.images
-],
+           "images": [
+               img.image_filename
+               for img in self.images
+            ],
             "reviews": [
                 {
                     "rating": r.rating,
