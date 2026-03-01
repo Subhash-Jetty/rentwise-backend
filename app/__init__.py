@@ -1,4 +1,4 @@
-from flask import Flask, send_from_directory
+from flask import Flask, app, send_from_directory
 from flask_sqlalchemy import SQLAlchemy
 from flask_jwt_extended import JWTManager
 from flask_cors import CORS
@@ -32,11 +32,9 @@ def create_app():
     app.register_blueprint(auth_bp, url_prefix="/auth")
     app.register_blueprint(property_bp)
     app.register_blueprint(analysis_bp, url_prefix="/analysis")
+   
     @app.route("/")
     def health_check():
-         return "OK", 200
-
-    with app.app_context():
-        db.create_all()
+       return "OK", 200
 
     return app
