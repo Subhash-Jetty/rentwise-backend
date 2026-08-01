@@ -3,6 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_jwt_extended import JWTManager
 from flask_cors import CORS
 import os
+import re
 from config import Config
 
 db = SQLAlchemy()
@@ -18,6 +19,10 @@ def create_app():
         for origin in os.environ.get("CORS_ORIGIN", "http://localhost:5173").split(",")
         if origin.strip()
     ]
+    cors_origin.extend([
+        re.compile(r"^https://rentwise-frontend(?:-[a-z0-9]+)?-subhash-jettys-projects\.vercel\.app$"),
+        "https://rentwise-frontend.vercel.app",
+    ])
     CORS(
         app,
         resources={r"/*": {"origins": cors_origin}},
