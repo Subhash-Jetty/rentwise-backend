@@ -22,6 +22,7 @@ def create_app():
     cors_origin.extend([
         re.compile(r"^https://rentwise-frontend(?:-[a-z0-9]+)?-subhash-jettys-projects\.vercel\.app$"),
         "https://rentwise-frontend.vercel.app",
+        "https://rentwise-frontend-two.vercel.app",
     ])
     CORS(
         app,
