@@ -1,4 +1,4 @@
-from flask import Flask, app, send_from_directory
+from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_jwt_extended import JWTManager
 from flask_cors import CORS
@@ -13,9 +13,10 @@ def create_app():
     app.config.from_object(Config)
 
     # Enable CORS properly
+    cors_origin = os.environ.get("CORS_ORIGIN", "http://localhost:5173")
     CORS(
         app,
-        resources={r"/*": {"origins": "https://rentwise-frontend-two.vercel.app"}},
+        resources={r"/*": {"origins": cors_origin}},
         supports_credentials=True,
         methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
         allow_headers=["Content-Type", "Authorization"]

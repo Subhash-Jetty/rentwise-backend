@@ -14,6 +14,10 @@ class Config:
         database_url = database_url.replace(
             "postgres://", "postgresql+psycopg2://", 1
         )
+    
+    if not database_url:
+        basedir = os.path.abspath(os.path.dirname(__file__))
+        database_url = 'sqlite:///' + os.path.join(basedir, 'rentwise.db')
 
     SQLALCHEMY_DATABASE_URI = database_url
     SQLALCHEMY_TRACK_MODIFICATIONS = False
