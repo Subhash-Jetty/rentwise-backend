@@ -5,6 +5,7 @@ from app.utils.r2_upload import upload_to_r2
 from app import db
 from app.models.property import Property
 from app.models.user import User
+from app.models.property_image import PropertyImage
 from app.models.review import Review
 from app.models.wishlist import Wishlist
 
@@ -219,20 +220,57 @@ def update_property(property_id):
     if property_obj.owner_id != user_id:
         return jsonify({"error": "Not authorized"}), 403
 
-    data = request.get_json()
-
     try:
+        # Support both JSON and multipart/form-data
+        if request.content_type and "multipart/form-data" in request.content_type:
+            data = request.form
+        else:
+            data = request.get_json() or {}
+
         if data.get("city"):
             property_obj.city = data.get("city").strip().title()
         if data.get("locality"):
             property_obj.locality = data.get("locality").strip().title()
-        property_obj.bedrooms = int(data.get("bedrooms", property_obj.bedrooms))
-        property_obj.area_sqft = float(data.get("area_sqft", property_obj.area_sqft))
-        property_obj.rent = round(float(data.get("rent", property_obj.rent)))
-        property_obj.description = data.get("description", property_obj.description)
+        if data.get("bedrooms"):
+            property_obj.bedrooms = int(data.get("bedrooms"))
+        if data.get("area_sqft"):
+            property_obj.area_sqft = float(data.get("area_sqft"))
+        if data.get("rent"):
+            property_obj.rent = round(float(data.get("rent")))
+        if data.get("description") is not None:
+            property_obj.description = data.get("description")
+
+        # Handle image deletions
+        deleted_image_ids = data.get("deleted_image_ids", "")
+        if deleted_image_ids:
+            import json
+            from app.utils.r2_upload import delete_from_r2
+            try:
+                ids_to_delete = json.loads(deleted_image_ids) if isinstance(deleted_image_ids, str) else deleted_image_ids
+                for img_id in ids_to_delete:
+                    img = db.session.get(PropertyImage, int(img_id))
+                    if img and img.property_id == property_obj.id:
+                        try:
+                            delete_from_r2(img.image_filename)
+                        except Exception:
+                            pass  # Still delete DB record even if R2 delete fails
+                        db.session.delete(img)
+            except (json.JSONDecodeError, TypeError):
+                pass
+
+        # Handle new image uploads
+        if request.content_type and "multipart/form-data" in request.content_type:
+            images = request.files.getlist("images")
+            for image in images:
+                if image and image.filename != "":
+                    image_url = upload_to_r2(image)
+                    property_image = PropertyImage(
+                        image_filename=image_url,
+                        property_id=property_obj.id
+                    )
+                    db.session.add(property_image)
 
         db.session.commit()
-
         return jsonify({"message": "Updated successfully"}), 200
 
     except Exception as e:
@@ -261,6 +299,39 @@ def delete_property(property_id):
     db.session.commit()
 
     return jsonify({"message": "Deleted successfully"}), 200
+
+
+# =========================================================
+# DELETE SINGLE IMAGE
+# =========================================================
+@property_bp.route("/<int:property_id>/images/<int:image_id>", methods=["DELETE"])
+@jwt_required()
+def delete_property_image(property_id, image_id):
+
+    user_id = int(get_jwt_identity())
+    property_obj = db.session.get(Property, property_id)
+
+    if not property_obj:
+        return jsonify({"error": "Property not found"}), 404
+
+    if property_obj.owner_id != user_id:
+        return jsonify({"error": "Not authorized"}), 403
+
+    img = db.session.get(PropertyImage, image_id)
+
+    if not img or img.property_id != property_id:
+        return jsonify({"error": "Image not found"}), 404
+
+    try:
+        from app.utils.r2_upload import delete_from_r2
+        delete_from_r2(img.image_filename)
+    except Exception:
+        pass  # Still delete DB record even if R2 delete fails
+
+    db.session.delete(img)
+    db.session.commit()
+
+    return jsonify({"message": "Image deleted"}), 200
 
 
 # =========================================================
