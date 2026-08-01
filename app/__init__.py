@@ -49,5 +49,8 @@ def create_app():
 
     with app.app_context():
         db.create_all()
+        from app.utils.demo_seed import seed_demo_data
+
+        seed_demo_data()
 
     return app
