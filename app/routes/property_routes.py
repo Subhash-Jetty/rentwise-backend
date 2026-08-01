@@ -1,12 +1,6 @@
-from flask import Blueprint, request, jsonify, current_app
+from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from werkzeug.utils import secure_filename
 from sqlalchemy import desc, asc
-import os
-from app.utils.r2_client import get_r2_client
-import uuid
-from app.extensions import db
-import os
 from app.utils.r2_upload import upload_to_r2
 from app import db
 from app.models.property import Property
@@ -91,13 +85,14 @@ def get_all_properties():
 
     current_user_id = None
     try:
-        current_user_id = int(get_jwt_identity())
-    except:
+        identity = get_jwt_identity()
+        current_user_id = int(identity) if identity else None
+    except (TypeError, ValueError):
         current_user_id = None
 
-    city = request.form.get("city")
+    city = request.args.get("city")
     if city:
-      city = city.strip().lower().capitalize()
+      city = city.strip()
     locality = request.args.get("locality")
     bedrooms = request.args.get("bedrooms")
     min_price = request.args.get("min_price")

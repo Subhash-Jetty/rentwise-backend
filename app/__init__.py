@@ -13,7 +13,11 @@ def create_app():
     app.config.from_object(Config)
 
     # Enable CORS properly
-    cors_origin = os.environ.get("CORS_ORIGIN", "http://localhost:5173")
+    cors_origin = [
+        origin.strip()
+        for origin in os.environ.get("CORS_ORIGIN", "http://localhost:5173").split(",")
+        if origin.strip()
+    ]
     CORS(
         app,
         resources={r"/*": {"origins": cors_origin}},
@@ -37,5 +41,8 @@ def create_app():
     @app.route("/")
     def health_check():
        return "OK", 200
+
+    with app.app_context():
+        db.create_all()
 
     return app

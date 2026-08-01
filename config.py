@@ -5,8 +5,8 @@ from datetime import timedelta
 load_dotenv()
 
 class Config:
-    SECRET_KEY = os.getenv("SECRET_KEY")
-    JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY")
+    SECRET_KEY = os.getenv("SECRET_KEY", "dev-secret-key")
+    JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY", SECRET_KEY)
 
     database_url = os.getenv("DATABASE_URL")
 
@@ -22,12 +22,9 @@ class Config:
     SQLALCHEMY_DATABASE_URI = database_url
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
-    
-    SQLALCHEMY_ENGINE_OPTIONS = {
-        "pool_pre_ping": True,
-        "connect_args": {
-            "sslmode": "require"
-        }
-    }
+    SQLALCHEMY_ENGINE_OPTIONS = {"pool_pre_ping": True}
+
+    if database_url.startswith("postgresql"):
+        SQLALCHEMY_ENGINE_OPTIONS["connect_args"] = {"sslmode": "require"}
 
     JWT_ACCESS_TOKEN_EXPIRES = timedelta(hours=1)

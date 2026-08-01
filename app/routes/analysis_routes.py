@@ -1,5 +1,6 @@
 from flask import Blueprint, jsonify
 from flask_jwt_extended import jwt_required
+from app import db
 from app.models.property import Property
 from app.utils.ml_loader import predict_rent
 
@@ -11,7 +12,7 @@ analysis_bp = Blueprint("analysis", __name__, url_prefix="/analysis")
 @jwt_required(optional=True)
 def analyze_property(property_id):
 
-    property_obj = Property.query.get(property_id)
+    property_obj = db.session.get(Property, property_id)
 
     if not property_obj:
         return jsonify({"error": "Property not found"}), 404
